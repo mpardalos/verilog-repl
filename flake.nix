@@ -13,7 +13,7 @@
           name = "verilog-repl";
           runtimeInputs = [ pkgs.iverilog pkgs.python3 ];
           text = ''
-            exec python3 ${./verilog_repl.py} "$@"
+            exec python3 ${./verilog-repl.py} "$@"
           '';
         };
       in {

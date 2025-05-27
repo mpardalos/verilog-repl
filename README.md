@@ -7,16 +7,16 @@ Evaluate Verilog expressions interactively
 If you're using nix:
 
 ``` sh
-nix run github:mpardalos/verilog_repl
+nix run github:mpardalos/verilog-repl
 ```
 
-Otherwise, download `verilog_repl.py` from here and run it. You will need `iverilog`
+Otherwise, download `verilog-repl.py` from here and run it. You will need `iverilog`
 available in your `$PATH`:
 
 ``` sh
-wget https://raw.githubusercontent.com/mpardalos/verilog_repl/refs/heads/master/verilog_repl.py
-chmod +x verilog_repl.py
-./verilog_repl.py
+wget https://raw.githubusercontent.com/mpardalos/verilog-repl/refs/heads/master/verilog-repl.py
+chmod +x verilog-repl.py
+./verilog-repl.py
 ```
 
 ## Usage
