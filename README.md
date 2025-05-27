@@ -1,6 +1,6 @@
 # Verilog-REPL
 
-Evaluate Verilog expressions interactively using iverilog
+Evaluate Verilog expressions interactively
 
 ## How to run this
 
@@ -10,7 +10,7 @@ If you're using nix:
 nix run github:mpardalos/verilog-repl
 ```
 
-Otherwise, download `verilog-repl.py` from here and run it. You will need `iverilog`
+Otherwise, download `verilog-repl.py` from here and run it. You will need either `iverilog` or `verilator`
 available in your `$PATH`:
 
 ``` sh
@@ -51,4 +51,20 @@ iverilog> e x + y
 Decimal: | 63|
 Hex:     |3f|
 Binary:  |00111111|
+```
+
+You can switch between iverilog and verilator:
+
+```
+iverilog> reg [7:0] x = 42;
+Added reg [7:0] x = 42 to environment
+iverilog> e x + 1
+Decimal: |        43|
+Hex:     |0000002b|
+Binary:  |00000000000000000000000000101011|
+iverilog> set verilator
+verilator> e x + 1
+Decimal: |        43|
+Hex:     |0000002b|
+Binary:  |00000000000000000000000000101011|
 ```

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from subprocess import run
+from subprocess import DEVNULL, PIPE, run
 import cmd
 import readline
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Literal, Tuple
 from re import fullmatch
 from pprint import pprint
 
@@ -14,7 +14,7 @@ type VarName = str
 type VectorDeclaration = str
 type Expression = str
 
-type Env = Dict[VarName, (VectorDeclaration, Expression)]
+type Env = Dict[VarName, Tuple[VectorDeclaration, Expression]]
 
 
 def verilog_of_expr(env: Env, expr: str):
@@ -29,29 +29,53 @@ initial begin
     $display("Decimal: |%d|", {expr});
     $display("Hex:     |%h|", {expr});
     $display("Binary:  |%b|", {expr});
+    $finish;
 end
 endmodule"""
 
 
-def run_verilog(verilog: str):
+def run_verilog_iverilog(verilog: str):
     VVP_FILE = Path("./.temp.vvp").absolute()
     VERILOG_FILE = Path("./.temp.v").absolute()
     try:
         VERILOG_FILE.write_text(verilog)
         run(["iverilog", "-o", VVP_FILE, VERILOG_FILE])
-        run(["vvp", VVP_FILE])
+        # Capture the output and drop the last line. The $finish prints out some
+        # garbage that we want to hide
+        output = run(["vvp", VVP_FILE], text=True, stdout=PIPE).stdout
+        print("\n".join(output.splitlines()[:-1]))
+
     finally:
         run(["rm", "-f", VVP_FILE, VERILOG_FILE])
+
+
+def run_verilog_verilator(verilog: str):
+    with TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "V.v").write_text(verilog)
+        run(
+            ["verilator", "--binary", "--exe", "V.v", "-o", "V.bin"],
+            cwd=tmpdir,
+            stdout=DEVNULL,
+            stderr=DEVNULL,
+        )
+        # Capture the output and drop the last line. The $finish prints out some
+        # garbage that we want to hide
+        output = run(
+            ["./obj_dir/V.bin", "+verilator+quiet"], cwd=tmpdir, text=True, stdout=PIPE
+        ).stdout
+        print("\n".join(output.splitlines()[:-1]))
 
 
 class VerilogRepl(cmd.Cmd):
     prompt = "iverilog> "
     env: Env = dict()
-    debug: bool = False
 
-    def emptyline():
+    debug: bool = False
+    simulator: Literal["verilator", "iverilog"] = "iverilog"
+
+    def emptyline(self):
         # Default behaviour is to repeat last command. Do nothing instead
-        pass
+        return False
 
     def do_eval(self, arg):
         """Evaluate a verilog expression"""
@@ -60,7 +84,12 @@ class VerilogRepl(cmd.Cmd):
             print("---")
             print(verilog)
             print("---")
-        run_verilog(verilog)
+
+        match self.simulator:
+            case "verilator":
+                run_verilog_verilator(verilog)
+            case "iverilog":
+                run_verilog_iverilog(verilog)
 
     def do_e(self, arg):
         """Alias for 'eval'"""
@@ -85,12 +114,28 @@ class VerilogRepl(cmd.Cmd):
         """
         Set a flag on the REPL
 
-        Only "debug" is supported for now
+        Flags:
+
+          debug|nodebug
+            Print extra debugging information (includes full module to be simulated)
+
+          iverilog|verilator
+            Simulator to use
+
         """
-        if arg == "debug":
-            self.debug = True
-        else:
-            print(f"*** Unknown option '{arg}'")
+        match arg:
+            case "debug":
+                self.debug = True
+            case "nodebug":
+                self.debug = True
+            case "iverilog":
+                self.simulator = "iverilog"
+                self.prompt = "iverilog> "
+            case "verilator":
+                self.simulator = "verilator"
+                self.prompt = "verilator> "
+            case _:
+                print(f"*** Unknown option '{arg}'")
 
     def do_unset(self, arg):
         """
@@ -119,5 +164,7 @@ class VerilogRepl(cmd.Cmd):
         """Exit"""
         return True
 
+
 if __name__ == "__main__":
     VerilogRepl().cmdloop()
+    print()

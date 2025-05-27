@@ -9,16 +9,22 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        deps = [
+          pkgs.iverilog
+          pkgs.verilator
+          pkgs.python3
+        ];
+
         verilog-repl = pkgs.writeShellApplication {
           name = "verilog-repl";
-          runtimeInputs = [ pkgs.iverilog pkgs.python3 ];
+          runtimeInputs = deps;
           text = ''
             exec python3 ${./verilog-repl.py} "$@"
           '';
         };
       in {
         devShells.default =
-          pkgs.mkShell { packages = [ pkgs.iverilog pkgs.python3 ]; };
+          pkgs.mkShell { packages = deps; };
 
         apps.default = {
           type = "app";
