@@ -1,6 +1,6 @@
 # Verilog-REPL
 
-Evaluate Verilog expressions interactively
+Evaluate Verilog expressions interactively using iverilog
 
 ## How to run this
 
