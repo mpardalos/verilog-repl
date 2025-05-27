@@ -35,18 +35,15 @@ endmodule"""
 
 
 def run_verilog_iverilog(verilog: str):
-    VVP_FILE = Path("./.temp.vvp").absolute()
-    VERILOG_FILE = Path("./.temp.v").absolute()
-    try:
-        VERILOG_FILE.write_text(verilog)
-        run(["iverilog", "-o", VVP_FILE, VERILOG_FILE])
+    with TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "V.v").write_text(verilog)
+        verilog_file = Path(tmpdir) / "V.v"
+        vvp_file = Path(tmpdir) / "V.vvp"
+        run(["iverilog", "-o", vvp_file, verilog_file])
         # Capture the output and drop the last line. The $finish prints out some
         # garbage that we want to hide
-        output = run(["vvp", VVP_FILE], text=True, stdout=PIPE).stdout
+        output = run(["vvp", vvp_file], text=True, stdout=PIPE).stdout
         print("\n".join(output.splitlines()[:-1]))
-
-    finally:
-        run(["rm", "-f", VVP_FILE, VERILOG_FILE])
 
 
 def run_verilog_verilator(verilog: str):
