@@ -6,15 +6,31 @@ import readline
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 from typing import Dict
+from re import fullmatch
+from pprint import pprint
 
 
-def verilog_of_expr(expr: str):
+type VarName = str
+type VectorDeclaration = str
+type Expression = str
+
+type Env = Dict[VarName, (VectorDeclaration, Expression)]
+
+
+def verilog_of_expr(env: Env, expr: str):
+    declarations = ""
+    for (name, (vec, reg_expr)) in env.items():
+        declarations += f"reg [{vec}] {name} = {reg_expr};\n"
+
     return f"""module V;
-initial $display("Decimal: |%d|", {expr});
-initial $display("Hex:     |%h|", {expr});
-initial $display("Binary:  |%b|", {expr});
-endmodule
-"""
+
+{declarations}
+initial begin
+    $display("Decimal: |%d|", {expr});
+    $display("Hex:     |%h|", {expr});
+    $display("Binary:  |%b|", {expr});
+end
+endmodule"""
 
 
 def run_verilog(verilog: str):
@@ -29,19 +45,37 @@ def run_verilog(verilog: str):
 
 
 def repl():
+    env: Env = dict()
+    debug = True
+
     while True:
         try:
-            line = input("iverilog> ")
+            line = input("iverilog> ").strip()
+            if line in ["q", "quit", "exit"]:
+                break
+            elif line == 'env':
+                pprint(env)
+            elif m := fullmatch(r'^set\s+debug$', line):
+                debug = True
+            elif m := fullmatch(r'^unset\s+debug$', line):
+                debug = False
+            elif m := fullmatch(r'^reg\s+\[(.+?)]\s+(\w+)\s+=\s+(.*?);?', line):
+                env[m[2]] = (m[1], m[3])
+                print(f"Added reg [{m[1]}] {m[2]} = {m[3]} to environment")
+            else:
+                verilog = verilog_of_expr(env, line)
+                if debug:
+                    print('---')
+                    print(verilog)
+                    print('---')
+                run_verilog(verilog)
         except EOFError:
             break
         except KeyboardInterrupt:
             break
-
-        if line in ["q", "quit", "exit"]:
-            break
-        else:
-            run_verilog(verilog_of_expr(line.strip()))
-
+        except Exception as e:
+            print(e)
+            continue
     print()
 
 
