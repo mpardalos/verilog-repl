@@ -19,7 +19,7 @@ type Env = Dict[VarName, (VectorDeclaration, Expression)]
 
 def verilog_of_expr(env: Env, expr: str):
     declarations = ""
-    for (name, (vec, reg_expr)) in env.items():
+    for name, (vec, reg_expr) in env.items():
         declarations += f"reg [{vec}] {name} = {reg_expr};\n"
 
     return f"""module V;
@@ -44,40 +44,80 @@ def run_verilog(verilog: str):
         run(["rm", "-f", VVP_FILE, VERILOG_FILE])
 
 
-def repl():
+class VerilogRepl(cmd.Cmd):
+    prompt = "iverilog> "
     env: Env = dict()
-    debug = True
+    debug: bool = True
 
-    while True:
-        try:
-            line = input("iverilog> ").strip()
-            if line in ["q", "quit", "exit"]:
-                break
-            elif line == 'env':
-                pprint(env)
-            elif m := fullmatch(r'^set\s+debug$', line):
-                debug = True
-            elif m := fullmatch(r'^unset\s+debug$', line):
-                debug = False
-            elif m := fullmatch(r'^reg\s+\[(.+?)]\s+(\w+)\s+=\s+(.*?);?', line):
-                env[m[2]] = (m[1], m[3])
-                print(f"Added reg [{m[1]}] {m[2]} = {m[3]} to environment")
-            else:
-                verilog = verilog_of_expr(env, line)
-                if debug:
-                    print('---')
-                    print(verilog)
-                    print('---')
-                run_verilog(verilog)
-        except EOFError:
-            break
-        except KeyboardInterrupt:
-            break
-        except Exception as e:
-            print(e)
-            continue
-    print()
+    def emptyline():
+        # Default behaviour is to repeat last command. Do nothing instead
+        pass
 
+    def do_eval(self, arg):
+        """Evaluate a verilog expression"""
+        verilog = verilog_of_expr(self.env, arg)
+        if self.debug:
+            print("---")
+            print(verilog)
+            print("---")
+        run_verilog(verilog)
+
+    def do_e(self, arg):
+        """Alias for 'eval'"""
+        return self.do_eval(arg)
+
+    def do_reg(self, arg):
+        """Add a reg definition"""
+        if m := fullmatch(r"^\[(.+?)]\s+(\w+)\s+=\s+(.*?);?", arg):
+            self.env[m[2]] = (m[1], m[3])
+            print(f"Added reg [{m[1]}] {m[2]} = {m[3]} to environment")
+        else:
+            print("*** Unknown syntax")
+
+    def do_env(self, arg):
+        """Print the environment"""
+        for name, (vec, reg_expr) in self.env.items():
+            print(f"reg [{vec}] {name} = {reg_expr};")
+        if not self.env.items():
+            print("[empty]")
+
+    def do_set(self, arg):
+        """
+        Set a flag on the REPL
+
+        Only "debug" is supported for now
+        """
+        if arg == "debug":
+            self.debug = True
+        else:
+            print(f"*** Unknown option '{arg}'")
+
+    def do_unset(self, arg):
+        """
+        Set a flag on the REPL
+
+        Only "debug" is supported for now
+        """
+        if arg == "debug":
+            self.debug = False
+        else:
+            print(f"*** Unknown option '{arg}'")
+
+    def do_EOF(self, arg):
+        """Exit"""
+        return True
+
+    def do_q(self, arg):
+        """Exit"""
+        return True
+
+    def do_quit(self, arg):
+        """Exit"""
+        return True
+
+    def do_exit(self, arg):
+        """Exit"""
+        return True
 
 if __name__ == "__main__":
-    repl()
+    VerilogRepl().cmdloop()
