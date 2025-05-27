@@ -75,8 +75,24 @@ class VerilogRepl(cmd.Cmd):
         return False
 
     def do_eval(self, arg):
-        """Evaluate a verilog expression"""
+        """
+        Evaluate a verilog expression. Accepts
+
+        Usage:
+            e <expr>                  Evaluate expression in a self-determined context
+            e [<msb>:<lsb>] <expr>    Evaluate expression in a [<msb>:<lsb>] context
+            e [<width>] <expr>        Evaluate expression in a [<width - 1>:0] context
+        """
+
         verilog = verilog_of_expr(self.env, arg)
+        if m := fullmatch(r'^\[(\d+:\d+)\]\s*(.*)', arg):
+            vec, expr = m.groups()
+            verilog = verilog_of_expr(self.env | {'__eval': (vec, expr)}, '__eval')
+        elif m := fullmatch(r'^\[(\d+)\]\s*(.*)', arg):
+            width, expr = m.groups()
+            vec = f'{int(width)-1}:0'
+            verilog = verilog_of_expr(self.env | {'__eval': (vec, expr)}, '__eval')
+
         if self.debug:
             print("---")
             print(verilog)

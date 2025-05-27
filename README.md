@@ -40,6 +40,15 @@ Hex:     |00000006|
 Binary:  |00000000000000000000000000000110|
 ```
 
+If you want to evaluate the expression at a specific width, you can specify that after the `e`:
+
+```
+iverilog> e [15:0] 1
+Decimal: |    1|
+Hex:     |0001|
+Binary:  |0000000000000001|
+```
+
 You can also create registers (with a constant value) with `reg`
 
 ```
