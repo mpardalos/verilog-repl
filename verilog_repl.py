@@ -47,7 +47,7 @@ def run_verilog(verilog: str):
 class VerilogRepl(cmd.Cmd):
     prompt = "iverilog> "
     env: Env = dict()
-    debug: bool = True
+    debug: bool = False
 
     def emptyline():
         # Default behaviour is to repeat last command. Do nothing instead
