@@ -86,13 +86,13 @@ class VerilogRepl(cmd.Cmd):
         """
 
         verilog = verilog_of_expr(self.env, arg)
-        if m := fullmatch(r'^\[(\d+:\d+)\]\s*(.*)', arg):
+        if m := fullmatch(r"^\[(\d+:\d+)\]\s*(.*)", arg):
             vec, expr = m.groups()
-            verilog = verilog_of_expr(self.env | {'__eval': (vec, expr)}, '__eval')
-        elif m := fullmatch(r'^\[(\d+)\]\s*(.*)', arg):
+            verilog = verilog_of_expr(self.env | {"__eval": (vec, expr)}, "__eval")
+        elif m := fullmatch(r"^\[(\d+)\]\s*(.*)", arg):
             width, expr = m.groups()
-            vec = f'{int(width)-1}:0'
-            verilog = verilog_of_expr(self.env | {'__eval': (vec, expr)}, '__eval')
+            vec = f"{int(width)-1}:0"
+            verilog = verilog_of_expr(self.env | {"__eval": (vec, expr)}, "__eval")
 
         if self.debug:
             print("---")
