@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Literal, Tuple
 from re import fullmatch
 from pprint import pprint
+import os
 
 
 type VarName = str
@@ -49,11 +50,11 @@ def run_verilog_iverilog(verilog: str):
 def run_verilog_verilator(verilog: str):
     with TemporaryDirectory() as tmpdir:
         (Path(tmpdir) / "V.v").write_text(verilog)
+        os.environ['LANG'] = 'C' # Supress perl errors in verilator
         run(
             ["verilator", "--binary", "--exe", "V.v", "-o", "V.bin"],
             cwd=tmpdir,
-            stdout=DEVNULL,
-            stderr=DEVNULL,
+            stdout=DEVNULL
         )
         # Capture the output and drop the last line. The $finish prints out some
         # garbage that we want to hide
