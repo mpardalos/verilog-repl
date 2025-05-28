@@ -75,6 +75,13 @@ class VerilogRepl(cmd.Cmd):
         # Default behaviour is to repeat last command. Do nothing instead
         return False
 
+    def onecmd(self, line):
+        try:
+            return super().onecmd(line)
+        except Exception as e:
+            print(e)
+            return False
+
     def do_eval(self, arg):
         """
         Evaluate a verilog expression. Accepts
