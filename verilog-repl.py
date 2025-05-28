@@ -71,9 +71,36 @@ class VerilogRepl(cmd.Cmd):
     debug: bool = False
     simulator: Literal["verilator", "iverilog"] = "iverilog"
 
-    def emptyline(self):
-        # Default behaviour is to repeat last command. Do nothing instead
-        return False
+    def precmd(self, line):
+        if not line:
+            return ''
+        elif line.startswith(":"):
+            return line[1:]
+        elif line.startswith('?'):
+            return 'help ' + line[1:]
+        elif line == 'EOF':
+            return 'q'
+        elif line.startswith('reg'):
+            return line
+        else:
+            return "eval " + line
+
+    # We override get_names so that cmd.Cmd sees commands prefixed with ':'.
+    def get_names(self):
+        names = []
+        for name in super().get_names():
+            if name.startswith('do_'):
+                names.append('do_:' + name[3:])
+            else:
+                names.append(name)
+        return names
+
+    # We, then, need to override __getattr__, so that when cmd.Cmd looks at the
+    # ':'-prefixed names, we remove the ':' to get the actual method
+    def __getattr__(self, name):
+        if name.startswith('do_:'):
+            return getattr(self, 'do_' + name[4:])
+        raise AttributeError
 
     def onecmd(self, line):
         try:
@@ -87,9 +114,9 @@ class VerilogRepl(cmd.Cmd):
         Evaluate a verilog expression. Accepts
 
         Usage:
-            e <expr>                  Evaluate expression in a self-determined context
-            e [<msb>:<lsb>] <expr>    Evaluate expression in a [<msb>:<lsb>] context
-            e [<width>] <expr>        Evaluate expression in a [<width - 1>:0] context
+            :eval <expr>                  Evaluate expression in a self-determined context
+            :eval [<msb>:<lsb>] <expr>    Evaluate expression in a [<msb>:<lsb>] context
+            :eval [<width>] <expr>        Evaluate expression in a [<width - 1>:0] context
         """
 
         verilog = verilog_of_expr(self.env, arg)

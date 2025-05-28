@@ -28,13 +28,13 @@ iverilog> ?
 
 Documented commands (type help <topic>):
 ========================================
-EOF  e  env  eval  exit  help  q  quit  reg  set  unset
+:EOF  :e  :env  :eval  :exit  :help  :q  :quit  :reg  :set  :unset
 ```
 
 Evaluate Verilog expressions with `e <expr>`:
 
 ```
-iverilog> e 32'd5 + 2'b01
+iverilog> 32'd5 + 2'b01
 Decimal: |         6|
 Hex:     |00000006|
 Binary:  |00000000000000000000000000000110|
@@ -43,7 +43,7 @@ Binary:  |00000000000000000000000000000110|
 If you want to evaluate the expression at a specific width, you can specify that after the `e`:
 
 ```
-iverilog> e [15:0] 1
+iverilog> [15:0] 1
 Decimal: |    1|
 Hex:     |0001|
 Binary:  |0000000000000001|
@@ -56,7 +56,7 @@ iverilog> reg [7:0] x = 8'd42;
 Added reg [7:0] x = 8'd42 to environment
 iverilog> reg [5:0] y = 8'd21;
 Added reg [5:0] y = 8'd21 to environment
-iverilog> e x + y
+iverilog> x + y
 Decimal: | 63|
 Hex:     |3f|
 Binary:  |00111111|
@@ -65,15 +65,13 @@ Binary:  |00111111|
 You can switch between iverilog and verilator:
 
 ```
-iverilog> reg [7:0] x = 42;
-Added reg [7:0] x = 42 to environment
-iverilog> e x + 1
-Decimal: |        43|
-Hex:     |0000002b|
-Binary:  |00000000000000000000000000101011|
-iverilog> set verilator
-verilator> e x + 1
-Decimal: |        43|
-Hex:     |0000002b|
-Binary:  |00000000000000000000000000101011|
+iverilog> 1
+Decimal: |          1|
+Hex:     |00000001|
+Binary:  |00000000000000000000000000000001|
+iverilog> :set verilator
+verilator> 1
+Decimal: |          1|
+Hex:     |00000001|
+Binary:  |00000000000000000000000000000001|
 ```
