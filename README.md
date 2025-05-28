@@ -10,14 +10,14 @@ If you're using nix:
 nix run github:mpardalos/verilog-repl
 ```
 
-Otherwise, download `verilog-repl.py` from here and run it. You will need either `iverilog` or `verilator`
-available in your `$PATH`:
+Otherwise: 
 
 ``` sh
 wget https://raw.githubusercontent.com/mpardalos/verilog-repl/refs/heads/master/verilog-repl.py
 chmod +x verilog-repl.py
 ./verilog-repl.py
 ```
+You will need either `iverilog` or `verilator` available in your `$PATH`.
 
 ## Usage
 
