@@ -31,7 +31,7 @@ Documented commands (type help <topic>):
 :EOF  :e  :env  :eval  :exit  :help  :q  :quit  :reg  :set  :unset
 ```
 
-Evaluate Verilog expressions with `e <expr>`:
+Type in a verilog expression and it gets evaluated
 
 ```
 iverilog> 32'd5 + 2'b01
@@ -40,7 +40,7 @@ Hex:     |00000006|
 Binary:  |00000000000000000000000000000110|
 ```
 
-If you want to evaluate the expression at a specific width, you can specify that after the `e`:
+If you want to evaluate the expression at a specific width, you can specify that before the expression:
 
 ```
 iverilog> [15:0] 1
