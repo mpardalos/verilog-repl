@@ -95,6 +95,9 @@ class VerilogRepl(cmd.Cmd):
                 names.append(name)
         return names
 
+    def emptyline(self):
+        pass
+
     # We, then, need to override __getattr__, so that when cmd.Cmd looks at the
     # ':'-prefixed names, we remove the ':' to get the actual method
     def __getattr__(self, name):
